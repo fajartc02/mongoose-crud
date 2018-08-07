@@ -11,6 +11,6 @@ var booksSchema = new Schema({
         timestamps: true
     });
 
-var Books = mongoose.model('Book', booksSchema);
+var Book = mongoose.model('Book', booksSchema);
 
-module.exports = Books
+module.exports = Book

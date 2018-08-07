@@ -1,6 +1,20 @@
 const Transaction = require('../models/modelTransaction')
 var mongoose = require('mongoose');
 
+function findOne(id, query) {
+  return new Promise((resolve, reject) => {
+    // let id = mongoose.Types.ObjectId(req.params.id)
+    // let query = { _id: id }
+    Transaction.findOne(query)
+      .then(data => {
+        resolve(data)
+      })
+      .catch(err => {
+        reject(err)
+      })
+  })
+}
+
 module.exports = {
   seedsData: (req, res) => {
     // let data = 
@@ -44,15 +58,60 @@ module.exports = {
 
   updateTransaction: (req, res) => {
     let id = mongoose.Types.ObjectId(req.params.id)
-    Transaction.update({ _id: id }, { $set: req.body }, { $push: { booklist: req.body.booklist } })
-      .then(() => {
-        res.status(201).json({
-          message: 'Success To update data Transaction',
-        })
+    let query = { _id: id }
+    // Transaction.findOne(query)
+    // .then(data => {
+    findOne(id, query)
+      .then(data => {
+        let updateData = {
+          member: req.body.member || data.member,
+          days: req.body.days || data.days,
+          out_date: req.body.out_date || data.out_date,
+          due_date: req.body.due_date || data.due_date,
+          in_date: req.body.in_date || data.in_date,
+          fine: req.body.fine || data.fine,
+        }
+        if (req.body.booklist) {
+          Transaction.update(
+            { _id: id },
+            {
+              $set: updateData,
+              $push: { booklist: req.body.booklist || data.booklist }
+            })
+            .then(() => {
+              res.status(201).json({
+                message: 'Success To update data Transaction',
+              })
+            })
+            .catch(err => {
+              res.status(500).json({
+                message: 'Failed to update data Transaction',
+                err: err.message
+              })
+            })
+        } else {
+          Transaction.update(
+            { _id: id },
+            {
+              $set: updateData,
+              // $push: { booklist: req.body.booklist || data.booklist }
+            })
+            .then(() => {
+              res.status(201).json({
+                message: 'Success To update data Transaction',
+              })
+            })
+            .catch(err => {
+              res.status(500).json({
+                message: 'Failed to update data Transaction',
+                err: err.message
+              })
+            })
+        }
       })
       .catch(err => {
         res.status(500).json({
-          message: 'Failed to update data Transaction',
+          message: 'Failed to find one data',
           err: err.message
         })
       })
